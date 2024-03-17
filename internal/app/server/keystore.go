@@ -16,7 +16,9 @@ func (s *Server) getKey(c *gin.Context) {
 	if errors.Is(err, keystore.ErrNotFound) {
 		c.AbortWithStatus(http.StatusNotFound)
 		return
-	} else if err != nil {
+	}
+
+	if err != nil {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}

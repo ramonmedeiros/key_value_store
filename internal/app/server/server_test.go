@@ -14,6 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TestAddGetKeys check all errors expected from test
 func TestAddGetKeys(t *testing.T) {
 	logger := slog.New(slog.NewJSONHandler(os.Stderr, nil))
 

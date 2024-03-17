@@ -26,6 +26,7 @@ func New(logger *slog.Logger) *KeyStore {
 	}
 }
 
+// AddKey append a key/value and set it to be expired
 func (k *KeyStore) AddKey(key string, value []byte) error {
 	_, found := k.mutex.WithReadLock(func() ([]byte, bool) {
 		value, found := k.cache[key]
@@ -43,6 +44,7 @@ func (k *KeyStore) AddKey(key string, value []byte) error {
 	return nil
 }
 
+// GetKey retrieves a value based on key
 func (k *KeyStore) GetKey(key string) ([]byte, error) {
 	value, found := k.mutex.WithReadLock(func() ([]byte, bool) {
 		value, found := k.cache[key]

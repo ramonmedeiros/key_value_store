@@ -1,5 +1,45 @@
 # Key-value store
 
+## How to run
+
+Expectations:
+
+1. Have golang installed
+2. Have internet to download modules
+
+```
+$ GIN_MODE=release go run cmd/main.go
+```
+OR
+
+```
+make run-prod
+```
+
+You will see the rest frawework log
+
+## How to interact
+
+`GET /:key`
+
+```
+$ curl http://localhost:8080/key
+```
+
+`POST /:key` value
+
+```
+$ curl http://localhost:8080/key -d 'value'
+```
+
+## Tests
+
+```
+make tests
+```
+
+### Original request
+```
 Backend Work Test
 
 Create a simple in-memory cache with an HTTP interface
@@ -20,3 +60,4 @@ foreseeable future
 Remember, we want to see how you would build an in-memory cache with the given specifications. With this said; you're free to use external dependencies but for the core application (i.e. the cache) we want your implementation 
 
 Important! Please don't publish the test assignment or your result on the internet
+```

@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TestExpire assert if one single key is expired
 func TestExpire(t *testing.T) {
 	expireTime = time.Second
 	cache := New(slog.New(slog.NewJSONHandler(os.Stderr, nil)))
@@ -30,6 +31,7 @@ func TestExpire(t *testing.T) {
 	require.ErrorIs(t, err, ErrNotFound)
 }
 
+// TestExpirationWithLotsofKeys assert if several keys are expired
 func TestExpirationWithLotsofKeys(t *testing.T) {
 	expireTime = time.Second * 5
 	cache := New(slog.New(slog.NewJSONHandler(os.Stderr, nil)))

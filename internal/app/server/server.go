@@ -30,7 +30,7 @@ func New(port string, logger *slog.Logger, keyStore keystore.KeyStorer) *Server 
 
 	server.router = gin.Default()
 	server.setupConfig()
-	server.setupKeyValueStoreEndpoints()
+	server.setupKeyStoreEndpoints()
 	return server
 }
 
@@ -44,7 +44,8 @@ func (s *Server) setupConfig() {
 	s.router.Use(cors.New(config))
 }
 
-func (s *Server) setupKeyValueStoreEndpoints() {
+// setupKeyStoreEndpoints configures keystore endpoints
+func (s *Server) setupKeyStoreEndpoints() {
 	keyStoreEndpoints := s.router.Group("/")
 
 	keyStoreEndpoints.GET(":"+keyParam, s.getKey)

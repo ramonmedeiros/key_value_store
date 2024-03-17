@@ -17,6 +17,7 @@ type mutex struct {
 	*sync.RWMutex
 }
 
+// WithReadLock wraps a function with read locking
 func (m *mutex) WithReadLock(fn func() ([]byte, bool)) ([]byte, bool) {
 	m.RLock()
 	v, f := fn()
@@ -24,6 +25,7 @@ func (m *mutex) WithReadLock(fn func() ([]byte, bool)) ([]byte, bool) {
 	return v, f
 }
 
+// WithWriteLock wraps a function with write locking
 func (m *mutex) WithWriteLock(fn func()) {
 	m.Lock()
 	fn()

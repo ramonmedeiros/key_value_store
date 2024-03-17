@@ -9,7 +9,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestAddGetKeys(t *testing.T) {
+// TestUTF8Support assert utf8 support
+func TestUTF8Support(t *testing.T) {
 	testcases := []struct {
 		name  string
 		key   string
