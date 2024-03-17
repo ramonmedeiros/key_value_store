@@ -1,7 +1,13 @@
 package keystore
 
 import (
+	"errors"
 	"log/slog"
+)
+
+var (
+	ErrNotFound      = errors.New("could not found key")
+	ErrAlreadyExists = errors.New("key already exists")
 )
 
 type KeyStore struct {
@@ -22,9 +28,19 @@ func New(logger *slog.Logger) *KeyStore {
 	}
 }
 
-func (s *KeyStore) AddKey(key string, value []byte) error {
+func (k *KeyStore) AddKey(key string, value []byte) error {
+	_, found := k.cache[key]
+	if found {
+		return ErrAlreadyExists
+	}
+	k.cache[key] = value
 	return nil
 }
-func (s *KeyStore) GetKey(key string) ([]byte, error) {
-	return nil, nil
+
+func (k *KeyStore) GetKey(key string) ([]byte, error) {
+	value, found := k.cache[key]
+	if !found {
+		return nil, ErrNotFound
+	}
+	return value, nil
 }

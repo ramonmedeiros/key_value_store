@@ -8,11 +8,7 @@ import (
 )
 
 func (s *Server) getKey(c *gin.Context) {
-	key := c.Param(keyParam)
-	if key == "" {
-		c.AbortWithStatus(http.StatusBadRequest)
-		return
-	}
+	key := getKey(c)
 
 	value, err := s.keyStore.GetKey(key)
 	if err != nil {
@@ -24,23 +20,29 @@ func (s *Server) getKey(c *gin.Context) {
 }
 
 func (s *Server) addKey(c *gin.Context) {
-	key := c.Param(keyParam)
-	if key == "" {
-		c.AbortWithStatus(http.StatusBadRequest)
-		return
-	}
+	key := getKey(c)
 
 	defer c.Request.Body.Close()
 	content, err := io.ReadAll(c.Request.Body)
 	if err != nil {
 		s.logger.Error("could not read body: %s", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
+		return
 	}
 
 	err = s.keyStore.AddKey(key, content)
 	if err != nil {
 		s.logger.Error("could not add key: %s, error %s", key, err)
 		c.AbortWithStatus(http.StatusInternalServerError)
+		return
 	}
 	c.Status(http.StatusCreated)
+}
+
+func getKey(c *gin.Context) string {
+	key := c.Param(keyParam)
+	if key == "" {
+		c.AbortWithStatus(http.StatusBadRequest)
+	}
+	return key
 }
