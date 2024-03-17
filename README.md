@@ -1,11 +1,14 @@
 # Key-value store
 
-## How to run
+## Before run
 
 Expectations:
 
 1. Have golang installed
-2. Have internet to download modules
+2. Have makefile installed
+3. Have internet to download modules
+
+## How to run
 
 ```
 $ GIN_MODE=release go run cmd/main.go
@@ -37,6 +40,10 @@ $ curl http://localhost:8080/key -d 'value'
 ```
 make tests
 ```
+
+## Design considerations
+
+The proposed solution is for a standalone in in-memory cache. When scaling, only vertical scaling is supported. For a horizontal scaling, the project will need a massive change to support partitions and to communicate between nodes
 
 ### Original request
 ```
