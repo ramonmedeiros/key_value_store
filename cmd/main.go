@@ -8,6 +8,7 @@ import (
 
 	"github.com/caarlos0/env"
 	"github.com/ramonmedeiros/key_value_store/internal/app/server"
+	"github.com/ramonmedeiros/key_value_store/internal/keystore"
 )
 
 type config struct {
@@ -23,6 +24,6 @@ func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stderr, nil))
 	logger.Enabled(context.Background(), slog.LevelError)
 
-	httpServer := server.New(cfg.Port, logger)
+	httpServer := server.New(cfg.Port, logger, keystore.New(logger))
 	httpServer.Serve()
 }

@@ -14,8 +14,8 @@ func (s *Server) getKey(c *gin.Context) {
 		return
 	}
 
-	value, found := s.cache[key]
-	if !found {
+	value, err := s.keyStore.GetKey(key)
+	if err != nil {
 		c.AbortWithStatus(http.StatusNotFound)
 		return
 	}
@@ -37,5 +37,10 @@ func (s *Server) addKey(c *gin.Context) {
 		c.AbortWithStatus(http.StatusInternalServerError)
 	}
 
-	s.cache[key] = content
+	err = s.keyStore.AddKey(key, content)
+	if err != nil {
+		s.logger.Error("could not add key: %s, error %s", key, err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+	}
+	c.Status(http.StatusCreated)
 }
