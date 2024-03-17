@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/ramonmedeiros/key_value_store/internal/keystore"
 	"github.com/ramonmedeiros/key_value_store/internal/keystore/keystoretest"
 	"github.com/stretchr/testify/require"
 )
@@ -35,6 +36,21 @@ func TestAddGetKeys(t *testing.T) {
 		require.Equal(t, http.StatusOK, w.Code)
 		require.Equal(t, "test", w.Body.String())
 		require.Len(t, keystoreMock.GetKeyCalls(), 1)
+		keystoreMock.ResetCalls()
+	})
+
+	t.Run("getKey not found", func(t *testing.T) {
+		keystoreMock.GetKeyFunc = func(key string) ([]byte, error) {
+			return nil, keystore.ErrNotFound
+		}
+		w := httptest.NewRecorder()
+		req, err := http.NewRequest(http.MethodGet, "/test", nil)
+		require.NoError(t, err)
+		rest.router.ServeHTTP(w, req)
+
+		require.Equal(t, http.StatusNotFound, w.Code)
+		require.Len(t, keystoreMock.GetKeyCalls(), 1)
+		keystoreMock.ResetCalls()
 	})
 
 	t.Run("addKeyMethod", func(t *testing.T) {

@@ -1,18 +1,23 @@
 package server
 
 import (
+	"errors"
 	"io"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/ramonmedeiros/key_value_store/internal/keystore"
 )
 
 func (s *Server) getKey(c *gin.Context) {
 	key := getKey(c)
 
 	value, err := s.keyStore.GetKey(key)
-	if err != nil {
+	if errors.Is(err, keystore.ErrNotFound) {
 		c.AbortWithStatus(http.StatusNotFound)
+		return
+	} else if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 

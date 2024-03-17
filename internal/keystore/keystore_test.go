@@ -33,20 +33,22 @@ func TestAddGetKeys(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		cache := keystore.New(slog.New(slog.NewJSONHandler(os.Stderr, nil)))
+		t.Run(tc.name, func(t *testing.T) {
+			cache := keystore.New(slog.New(slog.NewJSONHandler(os.Stderr, nil)))
 
-		value, err := cache.GetKey(tc.key)
-		require.ErrorIs(t, keystore.ErrNotFound, err)
-		require.Nil(t, value)
+			value, err := cache.GetKey(tc.key)
+			require.ErrorIs(t, keystore.ErrNotFound, err)
+			require.Nil(t, value)
 
-		err = cache.AddKey(tc.key, tc.value)
-		require.NoError(t, err)
+			err = cache.AddKey(tc.key, tc.value)
+			require.NoError(t, err)
 
-		value, err = cache.GetKey(tc.key)
-		require.NoError(t, err)
-		require.Equal(t, tc.value, value)
+			value, err = cache.GetKey(tc.key)
+			require.NoError(t, err)
+			require.Equal(t, tc.value, value)
 
-		err = cache.AddKey(tc.key, tc.value)
-		require.ErrorIs(t, keystore.ErrAlreadyExists, err)
+			err = cache.AddKey(tc.key, tc.value)
+			require.ErrorIs(t, keystore.ErrAlreadyExists, err)
+		})
 	}
 }

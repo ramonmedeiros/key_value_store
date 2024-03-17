@@ -90,6 +90,13 @@ func (mock *Service) AddKeyCalls() []struct {
 	return calls
 }
 
+// ResetAddKeyCalls reset all the calls that were made to AddKey.
+func (mock *Service) ResetAddKeyCalls() {
+	mock.lockAddKey.Lock()
+	mock.calls.AddKey = nil
+	mock.lockAddKey.Unlock()
+}
+
 // GetKey calls GetKeyFunc.
 func (mock *Service) GetKey(key string) ([]byte, error) {
 	callInfo := struct {
@@ -124,4 +131,22 @@ func (mock *Service) GetKeyCalls() []struct {
 	calls = mock.calls.GetKey
 	mock.lockGetKey.RUnlock()
 	return calls
+}
+
+// ResetGetKeyCalls reset all the calls that were made to GetKey.
+func (mock *Service) ResetGetKeyCalls() {
+	mock.lockGetKey.Lock()
+	mock.calls.GetKey = nil
+	mock.lockGetKey.Unlock()
+}
+
+// ResetCalls reset all the calls that were made to all mocked methods.
+func (mock *Service) ResetCalls() {
+	mock.lockAddKey.Lock()
+	mock.calls.AddKey = nil
+	mock.lockAddKey.Unlock()
+
+	mock.lockGetKey.Lock()
+	mock.calls.GetKey = nil
+	mock.lockGetKey.Unlock()
 }
