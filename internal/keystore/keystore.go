@@ -1,23 +1,15 @@
 package keystore
 
 import (
-	"errors"
 	"log/slog"
 	"sync"
 	"time"
 )
 
-var (
-	ErrNotFound      = errors.New("could not found key")
-	ErrAlreadyExists = errors.New("key already exists")
-
-	expireTime = time.Minute * 30
-)
-
 type KeyStore struct {
 	logger *slog.Logger
 	cache  map[string][]byte
-	mutex  *sync.RWMutex
+	mutex  mutex
 }
 
 //go:generate go run github.com/matryer/moq -pkg keystoretest -with-resets -skip-ensure -out ./keystoretest/mock.go -stub . KeyStorer:Service
@@ -30,29 +22,32 @@ func New(logger *slog.Logger) *KeyStore {
 	return &KeyStore{
 		logger: logger,
 		cache:  map[string][]byte{},
-		mutex:  &sync.RWMutex{},
+		mutex:  mutex{&sync.RWMutex{}},
 	}
 }
 
 func (k *KeyStore) AddKey(key string, value []byte) error {
-	k.mutex.RLock()
-	_, found := k.cache[key]
-	k.mutex.RUnlock()
+	_, found := k.mutex.WithReadLock(func() ([]byte, bool) {
+		value, found := k.cache[key]
+		return value, found
+	})
 	if found {
 		return ErrAlreadyExists
 	}
-	k.mutex.Lock()
-	k.cache[key] = value
-	k.mutex.Unlock()
+
+	k.mutex.WithWriteLock(func() {
+		k.cache[key] = value
+	})
 
 	go k.expireKey(key)
 	return nil
 }
 
 func (k *KeyStore) GetKey(key string) ([]byte, error) {
-	k.mutex.RLock()
-	value, found := k.cache[key]
-	k.mutex.RUnlock()
+	value, found := k.mutex.WithReadLock(func() ([]byte, bool) {
+		value, found := k.cache[key]
+		return value, found
+	})
 	if !found {
 		return nil, ErrNotFound
 	}
@@ -61,8 +56,8 @@ func (k *KeyStore) GetKey(key string) ([]byte, error) {
 
 func (k *KeyStore) expireKey(key string) {
 	time.AfterFunc(expireTime, func() {
-		k.mutex.RLock()
-		delete(k.cache, key)
-		k.mutex.RUnlock()
+		k.mutex.WithWriteLock(func() {
+			delete(k.cache, key)
+		})
 	})
 }
