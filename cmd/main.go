@@ -13,8 +13,9 @@ import (
 )
 
 type config struct {
-	Port  string `env:"PORT" envDefault:"8080"`
-	Nodes int    `env:"NODES" envDefault:"4"`
+	Port         string `env:"PORT" envDefault:"8080"`
+	Nodes        int    `env:"NODES" envDefault:"4"`
+	VirtualNodes int    `env:"NODES" envDefault:"10"`
 }
 
 func main() {
@@ -26,7 +27,7 @@ func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stderr, nil))
 	logger.Enabled(context.Background(), slog.LevelError)
 
-	keyStore, err := keystore.New(logger, hash.New(), cfg.Nodes)
+	keyStore, err := keystore.New(logger, hash.New(), cfg.Nodes, cfg.VirtualNodes)
 	if err != nil {
 		os.Exit(1)
 	}

@@ -8,8 +8,7 @@ type Hasher interface {
 	Get(key string) (uint32, error)
 }
 
-type Client struct {
-}
+type Client struct{}
 
 func New() *Client {
 	return &Client{}

@@ -37,7 +37,7 @@ func TestUTF8Support(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			logger := slog.New(slog.NewJSONHandler(os.Stderr, nil))
-			cache, err := keystore.New(logger, hash.New(), 1)
+			cache, err := keystore.New(logger, hash.New(), 1, 1)
 			require.NoError(t, err)
 
 			value, err := cache.GetKey(tc.key)

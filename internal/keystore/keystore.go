@@ -1,19 +1,23 @@
 package keystore
 
 import (
+	"errors"
 	"log/slog"
+	"slices"
 	"strconv"
 	"sync"
 	"time"
 
+	"math/rand"
+
 	"github.com/ramonmedeiros/key_value_store/internal/hash"
-	"golang.org/x/exp/maps"
 )
 
 type KeyStore struct {
-	logger     *slog.Logger
-	nodes      map[uint32]node
-	hashClient hash.Hasher
+	logger      *slog.Logger
+	nodes       map[uint32]node
+	hashClient  hash.Hasher
+	sortedNodes []uint32
 }
 
 type node struct {
@@ -27,24 +31,30 @@ type KeyStorer interface {
 	GetKey(key string) ([]byte, error)
 }
 
-func New(logger *slog.Logger, hashClient hash.Hasher, numberOfNodes int) (*KeyStore, error) {
+func New(logger *slog.Logger, hashClient hash.Hasher, numberOfNodes int, virtualNodesPerNode int) (*KeyStore, error) {
 	keyStore := &KeyStore{
 		logger:     logger,
 		hashClient: hashClient,
 		nodes:      map[uint32]node{},
 	}
 
-	for n := 0; n < numberOfNodes; n++ {
-		nodeKey, err := hashClient.Get(strconv.Itoa(n))
-		if err != nil {
-			return nil, err
-		}
+	for n := 1; n <= numberOfNodes; n++ {
+		for v := 1; v <= virtualNodesPerNode; v++ {
+			nodeKey, err := hashClient.Get(strconv.Itoa(rand.Intn((10000 * n) + v)))
+			if err != nil {
+				return nil, err
+			}
 
-		keyStore.nodes[nodeKey] = node{
-			cache: map[uint32][]byte{},
-			mutex: mutex{&sync.RWMutex{}},
+			keyStore.nodes[nodeKey] = node{
+				cache: map[uint32][]byte{},
+				mutex: mutex{&sync.RWMutex{}},
+			}
+
+			keyStore.sortedNodes = append(keyStore.sortedNodes, nodeKey)
 		}
 	}
+
+	slices.Sort(keyStore.sortedNodes)
 
 	return keyStore, nil
 }
@@ -58,7 +68,10 @@ func (k *KeyStore) AddKey(key string, value []byte) error {
 	}
 
 	nodeKey := k.findNodeKey(hashKey)
-	n := k.nodes[nodeKey]
+	n, ok := k.nodes[nodeKey]
+	if !ok {
+		return errors.New("could not find node")
+	}
 
 	_, found := n.mutex.WithReadLock(func() ([]byte, bool) {
 		value, found := n.cache[hashKey]
@@ -84,7 +97,10 @@ func (k *KeyStore) GetKey(key string) ([]byte, error) {
 		return nil, err
 	}
 	nodeKey := k.findNodeKey(hashKey)
-	n := k.nodes[nodeKey]
+	n, ok := k.nodes[nodeKey]
+	if !ok {
+		return nil, errors.New("could not find node")
+	}
 
 	value, found := n.mutex.WithReadLock(func() ([]byte, bool) {
 		value, found := n.cache[hashKey]
@@ -109,14 +125,14 @@ func (k *KeyStore) expireKey(key uint32) {
 
 // findNodeKey returns the index for node: defaults to first
 func (k *KeyStore) findNodeKey(key uint32) uint32 {
-	nodeList := maps.Keys(k.nodes)
 
-	previousIndex := nodeList[0]
-	for _, nodeKey := range nodeList {
-		if key < nodeKey {
+	base := uint32(0)
+	var nodeKey uint32
+	for _, nodeKey = range k.sortedNodes {
+		if key > base && key < nodeKey {
 			break
 		}
-		previousIndex = nodeKey
+		base = nodeKey
 	}
-	return previousIndex
+	return nodeKey
 }
