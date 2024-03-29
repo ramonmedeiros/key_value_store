@@ -7,17 +7,19 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ramonmedeiros/key_value_store/internal/hash"
 	"github.com/stretchr/testify/require"
 )
 
 // TestExpire assert if one single key is expired
 func TestExpire(t *testing.T) {
 	expireTime = time.Second
-	cache := New(slog.New(slog.NewJSONHandler(os.Stderr, nil)))
+	cache, err := New(slog.New(slog.NewJSONHandler(os.Stderr, nil)), hash.New(), 1)
+	require.NoError(t, err)
 
 	key := "key"
 	value := []byte("value")
-	err := cache.AddKey(key, value)
+	err = cache.AddKey(key, value)
 	require.NoError(t, err)
 
 	respValue, err := cache.GetKey(key)
@@ -34,7 +36,8 @@ func TestExpire(t *testing.T) {
 // TestExpirationWithLotsofKeys assert if several keys are expired
 func TestExpirationWithLotsofKeys(t *testing.T) {
 	expireTime = time.Second * 5
-	cache := New(slog.New(slog.NewJSONHandler(os.Stderr, nil)))
+	cache, err := New(slog.New(slog.NewJSONHandler(os.Stderr, nil)), hash.New(), 1)
+	require.NoError(t, err)
 
 	totalKeys := 10000
 
