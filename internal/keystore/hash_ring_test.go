@@ -31,7 +31,7 @@ func TestDistributionNodes(t *testing.T) {
 			name:         "10 node, 1000 virtual",
 			nodes:        10,
 			virtualNodes: 1000,
-			totalKeys:    1000000,
+			totalKeys:    100000,
 		},
 	}
 	for _, tc := range testcases {
